@@ -2,7 +2,7 @@
 name = "hysterion_perms"
 version = "0.1.0"
 edition = "2021"
-authors = ["urielsv <urielsosavazquez@gmail.com>", "feliventu <felipeventurino@gmail.com>"]
+authors = ["urielsv", "feliventu"]
 description = "Hysterion Permissions Plugin"
 
 [lib] 
@@ -13,9 +13,9 @@ pumpkin = { git = "https://github.com/Pumpkin-MC/Pumpkin.git", branch = "master"
 pumpkin-util = { git = "https://github.com/Pumpkin-MC/Pumpkin.git", branch = "master", package = "pumpkin-util" }
 pumpkin-api-macros = { git = "https://github.com/Pumpkin-MC/Pumpkin.git", branch = "master", package = "pumpkin-api-macros" }
 
-async-trait = "0.1.83"
-tokio = { version = "1.42", features = [ "full" ] }
-lazy_static = "1.4"
+async-trait = "0.1.85"
+tokio = { version = "1.43", features = [ "full" ] }
+lazy_static = "1.5.0"
 
 env_logger = "0.11.6"
-log = "0.4.22"
+log = "0.4.25"
