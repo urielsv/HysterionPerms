@@ -1,25 +1,24 @@
-mod ping;
+mod commands;
+mod utils;
 
 use pumpkin::plugin::Context;
 use pumpkin_api_macros::{plugin_impl, plugin_method};
 use pumpkin_util::PermissionLvl;
 
+use commands::perms::PermsCommand;
+use commands::Command;
+
 #[plugin_method]
 async fn on_load(&mut self, server: &Context) -> Result<(), String> {
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
     
-    // server
-    //     .register_command(ping::init_command(), PermissionLvl::Zero)
-    //     .await;
+    server
+        .register_command(PermsCommand::init_command(), PermissionLvl::Three)
+        .await;
 
+    log::info!("[Hysterion (perms)] Commands registered successfully!");
+    log::info!("[Hysterion (perms)] Plugin loaded!");
     Ok(())
-    // Never reached
-    // log::info!("Ping command registered successfully!");
-
-    // log::info!("Commands registered successfully!");
-    // log::info!("Use /perms add to manage permissions");
-    // log::info!("Plugin loaded!");
-
 }
 
 #[plugin_impl]
