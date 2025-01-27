@@ -23,13 +23,13 @@ impl CommandExecutor for PermsCommand {
         _: &pumpkin::command::args::ConsumedArgs<'a>,
     ) -> Result<(), CommandError> {
         sender
-            .send_message(TextComponent::text("
-            Usage:\n
-            /perms add <player> <permission>\n
-            /perms remove <player> <permission>\n
-            /perms role <add/remove> <player> <role>\n
-            /perms list <player>\n
-            ").color_rgb(success_colour()))
+            .send_message(TextComponent::text(
+                "Usage:/perms add <player> <permission>
+                /perms remove <player> <permission>
+                /perms role <add/remove> <player> <role>
+                /perms list <player>"
+            )
+                .color_rgb(success_colour()))
             .await;
         Ok(())
     }
