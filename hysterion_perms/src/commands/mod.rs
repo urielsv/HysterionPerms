@@ -8,6 +8,7 @@ use pumpkin::command::{
 pub trait Command: CommandExecutor {
     fn get_name(&self) -> &'static str;
     fn get_description(&self) -> &'static str;
+    #[allow(dead_code)]
     fn init_command() -> CommandTree where Self: Sized;
 }
 

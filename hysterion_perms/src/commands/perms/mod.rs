@@ -17,7 +17,7 @@ use pumpkin_util::text::TextComponent;
 pub use add::PermsAddCommand;
 pub use role::PermsRoleCommand;
 
-use crate::{utils::success_colour, Command};
+use crate::{utils::success_colour, commands::Command};
 
 pub struct PermsCommand;
 

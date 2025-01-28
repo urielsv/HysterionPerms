@@ -10,6 +10,7 @@ pub struct DB {
 }
 
 impl DB {
+    #[allow(dead_code)]
     pub async fn init(path: &str) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         let db_url = format!("sqlite:{}", path);
         
@@ -25,6 +26,7 @@ impl DB {
     }
 }
 
+#[allow(dead_code)]
 pub async fn setup_db(path: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let db = DB::init(path).await?;
     if let Err(e) = DB_INSTANCE.set(Arc::new(db)) {
@@ -33,6 +35,7 @@ pub async fn setup_db(path: &str) -> Result<(), Box<dyn std::error::Error + Send
     Ok(())
 }
 
+#[allow(dead_code)]
 pub async fn get_db() -> Arc<DB> {
     DB_INSTANCE.get().expect("Database not initialized").clone()
 } 

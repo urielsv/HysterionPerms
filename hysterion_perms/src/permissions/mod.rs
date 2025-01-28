@@ -20,6 +20,7 @@ pub struct PlayerPermissions {
 }
 
 impl PlayerPermissions {
+    #[allow(dead_code)]
     pub async fn has_permission(&self, permission: &str) -> bool {
         // Check direct permissions first
         if self.direct_permissions.contains(&permission.to_string()) {
@@ -39,6 +40,7 @@ impl PlayerPermissions {
     }
 }
 
+#[allow(dead_code)]
 pub async fn init_tables() -> Result<(), sqlx::Error> {
     let db = get_db().await;
     
@@ -80,6 +82,7 @@ pub async fn init_tables() -> Result<(), sqlx::Error> {
     Ok(())
 }
 
+#[allow(dead_code)]
 pub async fn create_role(name: &str, level: i32) -> Result<(), sqlx::Error> {
     let db = get_db().await;
     
@@ -96,6 +99,7 @@ pub async fn create_role(name: &str, level: i32) -> Result<(), sqlx::Error> {
     Ok(())
 }
 
+#[allow(dead_code)]
 pub async fn get_role(name: &str) -> Result<Role, sqlx::Error> {
     let db = get_db().await;
     
@@ -114,6 +118,7 @@ pub async fn get_role(name: &str) -> Result<Role, sqlx::Error> {
     })
 }
 
+#[allow(dead_code)]
 pub async fn add_role_permission(role_name: &str, permission: &str) -> Result<(), sqlx::Error> {
     let db = get_db().await;
     let mut role = get_role(role_name).await?;
@@ -133,6 +138,7 @@ pub async fn add_role_permission(role_name: &str, permission: &str) -> Result<()
     Ok(())
 }
 
+#[allow(dead_code)]
 pub async fn get_player_permissions(uuid: &str) -> Result<PlayerPermissions, sqlx::Error> {
     let db = get_db().await;
     
