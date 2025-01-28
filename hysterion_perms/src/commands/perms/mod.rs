@@ -8,7 +8,7 @@ use pumpkin::{
         args::{players::PlayersArgumentConsumer, simple::SimpleArgConsumer},
         dispatcher::CommandError,
         tree::CommandTree,
-        tree_builder::{argument, literal},
+        tree_builder::{argument, literal, require},
         CommandExecutor, CommandSender,
     },
     server::Server,
@@ -51,22 +51,18 @@ impl Command for PermsCommand {
 
     fn init_command() -> CommandTree where Self: Sized {
         CommandTree::new([Self.get_name()], Self.get_description())
-            .then(literal(Self.get_name())
-                .requires_permission()
+            .then(require(|sender| sender.has_permission(&format!("hysterion_perms.{}", Self.get_name())))
                 .execute(PermsCommand)
                 .then(literal("add")
-                    .requires_permission()
                     .then(argument("player", PlayersArgumentConsumer)
                         .then(argument("permission", SimpleArgConsumer)
                             .execute(PermsAddCommand))))
                 .then(literal("role")
-                    .requires_permission()
                     .then(argument("role_action", SimpleArgConsumer)
                         .then(argument("player", PlayersArgumentConsumer)
                             .then(argument("role", SimpleArgConsumer)
                                 .execute(PermsRoleCommand)))))
                 .then(literal("info")
-                    .requires_permission()
                     .then(argument("player", PlayersArgumentConsumer)
                         .execute(PermsInfoCommand))))
     }
