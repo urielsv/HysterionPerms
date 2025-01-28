@@ -8,7 +8,6 @@ use pumpkin::{
     server::Server,
 };
 use pumpkin_util::text::TextComponent;
-use tokio::runtime::Handle;
 
 use crate::{permissions, utils::success_colour};
 
@@ -19,7 +18,7 @@ impl CommandExecutor for PermsAddCommand {
     async fn execute<'a>(
         &self,
         sender: &mut CommandSender<'a>,
-        _: &Server,
+        server: &Server,
         args: &ConsumedArgs<'a>,
     ) -> Result<(), CommandError> {
         let Some(Arg::Players(targets)) = args.get("player") else {
@@ -33,10 +32,8 @@ impl CommandExecutor for PermsAddCommand {
         let player_uuid = player.gameprofile.id.to_string();
         let permission_str = permission.to_string();
 
-        // Execute database operation in Tokio context
-        if let Err(e) = Handle::current().block_on(async move {
-            permissions::add_player_permission(&player_uuid, &permission_str).await
-        }) {
+        // Execute database operation
+        if let Err(e) = permissions::add_player_permission(&player_uuid, &permission_str).await {
             log::error!("Failed to add permission: {}", e);
             return Ok(());
         }

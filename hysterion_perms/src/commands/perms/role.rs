@@ -8,7 +8,6 @@ use pumpkin::{
     server::Server,
 };
 use pumpkin_util::text::TextComponent;
-use tokio::runtime::Handle;
 
 use crate::{permissions, utils::success_colour};
 
@@ -19,7 +18,7 @@ impl CommandExecutor for PermsRoleCommand {
     async fn execute<'a>(
         &self,
         sender: &mut CommandSender<'a>,
-        _: &Server,
+        server: &Server,
         args: &ConsumedArgs<'a>,
     ) -> Result<(), CommandError> {
         let Some(Arg::Simple(role_action)) = args.get("role_action") else {
@@ -37,9 +36,7 @@ impl CommandExecutor for PermsRoleCommand {
         let role_name = role.to_string();
 
         if *role_action == "add" {
-            if let Err(e) = Handle::current().block_on(async move {
-                permissions::add_player_to_role(&player_uuid, &role_name).await
-            }) {
+            if let Err(e) = permissions::add_player_to_role(&player_uuid, &role_name).await {
                 log::error!("Failed to add role: {}", e);
                 return Ok(());
             }
