@@ -70,8 +70,8 @@ pub async fn on_load(&mut self, server: &Context) -> Result<(), String> {
         }
     }
     
-    // Initialize other plugin components
-    permissions::init_permission_system();
+    // Initialize permission system with server context
+    permissions::init_permission_system(server);
 
     server
         .register_command(PermsCommand::init_command(), PermissionLvl::Four)

@@ -2,9 +2,10 @@
 use serde::{Deserialize, Serialize};
 use sqlx::Row;
 use pumpkin::command::{PermissionChecker, register_permission_checker};
+use pumpkin::plugin::api::context::Context;
 use std::sync::Arc;
 use uuid::Uuid;
-use std::runtime::Runtime;
+use tokio::runtime::Runtime;
 
 // Internal crate imports
 use crate::db::get_db;
@@ -209,20 +210,15 @@ impl HysterionPermissionChecker {
 
 impl PermissionChecker for HysterionPermissionChecker {
     fn check_permission(&self, uuid: &Uuid, permission: &str) -> bool {
-        // Convert UUID to string for database queries
-        let uuid_str = uuid.to_string();
-        
-        // Use the runtime to run our async check in a blocking context
         self.runtime.block_on(async {
-            // Get player's permissions from database
+            let uuid_str = uuid.to_string();
+            
             match get_player_permissions(&uuid_str).await {
                 Ok(player_perms) => {
-                    // First check direct permissions
                     if player_perms.direct_permissions.contains(&permission.to_string()) {
                         return true;
                     }
 
-                    // Then check role permissions
                     for role_name in &player_perms.roles {
                         if let Ok(role) = get_role(role_name).await {
                             if role.permissions.contains(&permission.to_string()) {
@@ -241,7 +237,7 @@ impl PermissionChecker for HysterionPermissionChecker {
     }
 }
 
-pub fn init_permission_system() {
+pub fn init_permission_system(server: &Context) {
     let checker = Arc::new(HysterionPermissionChecker::new());
     register_permission_checker(checker);
 } 
