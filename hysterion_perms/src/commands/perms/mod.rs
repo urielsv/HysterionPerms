@@ -1,5 +1,6 @@
 mod add;
 mod role;
+mod info;
 
 use async_trait::async_trait;
 use pumpkin::{
@@ -16,6 +17,7 @@ use pumpkin_util::text::TextComponent;
 
 pub use add::PermsAddCommand;
 pub use role::PermsRoleCommand;
+pub use info::PermsInfoCommand;
 
 use crate::{utils::success_colour, commands::Command};
 
@@ -58,5 +60,8 @@ impl Command for PermsCommand {
                     .then(argument("player", PlayersArgumentConsumer)
                         .then(argument("role", SimpleArgConsumer)
                             .execute(PermsRoleCommand)))))
+            .then(literal("info")
+                .then(argument("player", PlayersArgumentConsumer)
+                    .execute(PermsInfoCommand)))
     }
 } 
