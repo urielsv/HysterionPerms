@@ -8,6 +8,7 @@ use pumpkin::{
     server::Server,
 };
 use pumpkin_util::text::TextComponent;
+use tokio::runtime::Handle;
 
 use crate::{permissions, utils::success_colour};
 
@@ -32,8 +33,13 @@ impl CommandExecutor for PermsAddCommand {
         let player_uuid = player.gameprofile.id.to_string();
         let permission_str = permission.to_string();
 
-        // Execute database operation
-        if let Err(e) = permissions::add_player_permission(&player_uuid, &permission_str).await {
+        // Get the current runtime handle
+        let handle = Handle::current();
+
+        // Execute database operation in the runtime
+        if let Err(e) = handle.block_on(async {
+            permissions::add_player_permission(&player_uuid, &permission_str).await
+        }) {
             log::error!("Failed to add permission: {}", e);
             return Ok(());
         }

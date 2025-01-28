@@ -66,7 +66,7 @@ pub async fn on_load(&mut self, server: &Context) -> Result<(), String> {
     Ok(())
 }
 
-#[plugin_impl(hysterion_perms)]
+#[plugin_impl]
 pub struct MyPlugin;
 
 impl MyPlugin {
