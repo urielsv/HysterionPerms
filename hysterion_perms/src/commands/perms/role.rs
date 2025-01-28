@@ -8,7 +8,6 @@ use pumpkin::{
     server::Server,
 };
 use pumpkin_util::text::TextComponent;
-use tokio::runtime::Handle;
 
 use crate::{permissions, utils::success_colour};
 
@@ -36,13 +35,8 @@ impl CommandExecutor for PermsRoleCommand {
         let player_uuid = player.gameprofile.id.to_string();
         let role_name = role.to_string();
 
-        // Get the current runtime handle
-        let handle = Handle::current();
-
         if *role_action == "add" {
-            if let Err(e) = handle.block_on(async {
-                permissions::add_player_to_role(&player_uuid, &role_name).await
-            }) {
+            if let Err(e) = permissions::add_player_to_role(&player_uuid, &role_name).await {
                 log::error!("Failed to add role: {}", e);
                 return Ok(());
             }
