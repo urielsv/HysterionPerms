@@ -41,7 +41,7 @@ async fn on_load(&mut self, server: &Context) -> Result<(), String> {
         // Add permissions to role
         for permission in role_config.permissions {
             if let Err(e) = permissions::add_role_permission(&role_name, &permission).await {
-                log::error!("Failed to add permission {} to role {}: {}", permission, role_name, e);
+                log::warn!("Failed to add permission {} to role {}: {}", permission, role_name, e);
             }
         }
     }

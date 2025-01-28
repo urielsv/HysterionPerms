@@ -83,8 +83,9 @@ pub async fn init_tables() -> Result<(), sqlx::Error> {
 pub async fn create_role(name: &str, level: i32) -> Result<(), sqlx::Error> {
     let db = get_db().await;
     
+    // Use INSERT OR REPLACE to handle existing roles
     sqlx::query(
-        "INSERT INTO roles (name, permissions, level) VALUES ($1, $2, $3)"
+        "INSERT OR REPLACE INTO roles (name, permissions, level) VALUES ($1, $2, $3)"
     )
     .bind(name)
     .bind("[]") // Empty permissions array
@@ -117,14 +118,17 @@ pub async fn add_role_permission(role_name: &str, permission: &str) -> Result<()
     let db = get_db().await;
     let mut role = get_role(role_name).await?;
     
-    role.permissions.push(permission.to_string());
-    let permissions_json = serde_json::to_string(&role.permissions).unwrap();
+    // Only add permission if it doesn't exist
+    if !role.permissions.contains(&permission.to_string()) {
+        role.permissions.push(permission.to_string());
+        let permissions_json = serde_json::to_string(&role.permissions).unwrap();
 
-    sqlx::query("UPDATE roles SET permissions = $1 WHERE name = $2")
-        .bind(permissions_json)
-        .bind(role_name)
-        .execute(&db.pool)
-        .await?;
+        sqlx::query("UPDATE roles SET permissions = $1 WHERE name = $2")
+            .bind(permissions_json)
+            .bind(role_name)
+            .execute(&db.pool)
+            .await?;
+    }
 
     Ok(())
 }
