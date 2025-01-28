@@ -21,20 +21,6 @@ fn get_runtime() -> &'static Runtime {
     })
 }
 
-#[plugin_impl(hysterion_perms)]
-pub struct MyPlugin;
-
-impl MyPlugin {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Default for MyPlugin {
-    fn default() -> Self {
-        Self::new()
-    }
-}
 
 #[plugin_method]
 pub async fn on_load(&mut self, server: &Context) -> Result<(), String> {
@@ -91,4 +77,19 @@ pub async fn on_load(&mut self, server: &Context) -> Result<(), String> {
     log::info!("[Hysterion (perms)] Commands registered successfully!");
     log::info!("[Hysterion (perms)] Plugin loaded!");
     Ok(())
+}
+
+#[plugin_impl]
+pub struct MyPlugin;
+
+impl MyPlugin {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl Default for MyPlugin {
+    fn default() -> Self {
+        Self::new()
+    }
 }
