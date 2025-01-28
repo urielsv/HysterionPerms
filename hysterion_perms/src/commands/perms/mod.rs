@@ -50,7 +50,8 @@ impl Command for PermsCommand {
     }
 
     fn init_command() -> CommandTree where Self: Sized {
-        CommandTree::new([Self.get_name()], Self.get_description())
+        let tree = CommandTree::new([Self.get_name()], Self.get_description())
+            .execute(PermsCommand)
             .then(literal("add")
                 .requires_permission()
                 .then(argument("player", PlayersArgumentConsumer)
@@ -65,6 +66,19 @@ impl Command for PermsCommand {
             .then(literal("info")
                 .requires_permission()
                 .then(argument("player", PlayersArgumentConsumer)
-                    .execute(PermsInfoCommand)))
+                    .execute(PermsInfoCommand)));
+
+        // Set requires_permission on the root node
+        let mut nodes = tree.nodes;
+        if let Some(first_node) = nodes.first_mut() {
+            first_node.requires_permission = true;
+        }
+        
+        CommandTree {
+            nodes,
+            children: tree.children,
+            names: tree.names,
+            description: tree.description,
+        }
     }
 } 
