@@ -1,11 +1,7 @@
 use async_trait::async_trait;
-use pumpkin::{
-    command::{
-        dispatcher::CommandError,
-        tree::CommandTree,
-        CommandExecutor, CommandSender,
-    },
-    server::Server,
+use pumpkin::command::{
+    tree::CommandTree,
+    CommandExecutor,
 };
 
 #[async_trait]
@@ -15,5 +11,4 @@ pub trait Command: CommandExecutor {
     fn init_command() -> CommandTree where Self: Sized;
 }
 
-// Re-export commands
 pub mod perms;

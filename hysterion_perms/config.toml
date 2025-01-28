@@ -1,0 +1,25 @@
+# Default roles configuration
+# Level determines the hierarchy (higher number = more power)
+# Permissions are a list of strings that define what actions the role can perform
+
+[roles.admin]
+level = 3
+permissions = [
+    "hysterion.perms.*",  # Wildcard for all permission commands
+    "hysterion.admin.*"   # Example admin permissions
+]
+
+[roles.moderator]
+level = 2
+permissions = [
+    "hysterion.perms.view",
+    "hysterion.mod.kick",
+    "hysterion.mod.ban"
+]
+
+[roles.default]
+level = 1
+permissions = [
+    "hysterion.basic.play",
+    "hysterion.basic.chat"
+] 
