@@ -1,12 +1,10 @@
 // External crate imports
 use serde::{Deserialize, Serialize};
 use sqlx::Row;
-use pumpkin::command::{PermissionChecker, register_permission_checker};
-use pumpkin::plugin::api::context::Context;
+use pumpkin::plugin::api::{Context, PermissionChecker};
 use std::sync::Arc;
 use uuid::Uuid;
 use tokio::runtime::Runtime;
-
 // Internal crate imports
 use crate::db::get_db;
 
@@ -237,7 +235,7 @@ impl PermissionChecker for HysterionPermissionChecker {
     }
 }
 
-pub fn init_permission_system(server: &Context) {
+pub async fn init_permission_system(server: &Context) {
     let checker = Arc::new(HysterionPermissionChecker::new());
-    register_permission_checker(checker);
+    server.register_permission_checker(checker).await;
 } 

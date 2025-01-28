@@ -71,7 +71,7 @@ pub async fn on_load(&mut self, server: &Context) -> Result<(), String> {
     }
     
     // Initialize permission system with server context
-    permissions::init_permission_system(server);
+    permissions::init_permission_system(server).await;
 
     server
         .register_command(PermsCommand::init_command(), PermissionLvl::Four)
