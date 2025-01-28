@@ -9,7 +9,7 @@ use pumpkin::{
 };
 use pumpkin_util::text::TextComponent;
 
-use crate::{permissions, utils::success_colour};
+use crate::{permissions, utils::success_colour, get_runtime};
 
 pub struct PermsRoleCommand;
 
@@ -35,8 +35,11 @@ impl CommandExecutor for PermsRoleCommand {
         let player_uuid = player.gameprofile.id.to_string();
         let role_name = role.to_string();
 
+        let runtime = get_runtime();
         if *role_action == "add" {
-            if let Err(e) = permissions::add_player_to_role(&player_uuid, &role_name).await {
+            if let Err(e) = runtime.spawn(async move {
+                permissions::add_player_to_role(&player_uuid, &role_name).await
+            }).await.unwrap() {
                 log::error!("Failed to add role: {}", e);
                 return Ok(());
             }

@@ -10,11 +10,38 @@ use pumpkin_util::permission::PermissionLvl;
 use pumpkin_api_macros::{plugin_impl, plugin_method};
 use crate::commands::perms::PermsCommand;
 use crate::commands::Command;
+use tokio::runtime::Runtime;
+use std::sync::OnceLock;
 
+static RUNTIME: OnceLock<Runtime> = OnceLock::new();
+
+fn get_runtime() -> &'static Runtime {
+    RUNTIME.get_or_init(|| {
+        Runtime::new().expect("Failed to create Tokio runtime")
+    })
+}
+
+#[plugin_impl(hysterion_perms)]
+pub struct MyPlugin;
+
+impl MyPlugin {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl Default for MyPlugin {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 #[plugin_method]
 pub async fn on_load(&mut self, server: &Context) -> Result<(), String> {
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
+    
+    // Initialize runtime first
+    let _runtime = get_runtime();
     
     // Get plugin data directory
     let data_dir = PathBuf::from(server.get_data_folder());
@@ -64,19 +91,4 @@ pub async fn on_load(&mut self, server: &Context) -> Result<(), String> {
     log::info!("[Hysterion (perms)] Commands registered successfully!");
     log::info!("[Hysterion (perms)] Plugin loaded!");
     Ok(())
-}
-
-#[plugin_impl]
-pub struct MyPlugin;
-
-impl MyPlugin {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Default for MyPlugin {
-    fn default() -> Self {
-        Self::new()
-    }
 }

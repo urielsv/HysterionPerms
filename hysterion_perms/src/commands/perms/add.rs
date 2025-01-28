@@ -9,7 +9,7 @@ use pumpkin::{
 };
 use pumpkin_util::text::TextComponent;
 
-use crate::{permissions, utils::success_colour};
+use crate::{permissions, utils::success_colour, get_runtime};
 
 pub struct PermsAddCommand;
 
@@ -32,8 +32,11 @@ impl CommandExecutor for PermsAddCommand {
         let player_uuid = player.gameprofile.id.to_string();
         let permission_str = permission.to_string();
 
-        // Execute database operation
-        if let Err(e) = permissions::add_player_permission(&player_uuid, &permission_str).await {
+        // Execute database operation in our runtime
+        let runtime = get_runtime();
+        if let Err(e) = runtime.spawn(async move {
+            permissions::add_player_permission(&player_uuid, &permission_str).await
+        }).await.unwrap() {
             log::error!("Failed to add permission: {}", e);
             return Ok(());
         }
