@@ -52,15 +52,18 @@ impl Command for PermsCommand {
     fn init_command() -> CommandTree where Self: Sized {
         CommandTree::new([Self.get_name()], Self.get_description())
             .then(literal("add")
+                .requires_permission()
                 .then(argument("player", PlayersArgumentConsumer)
                     .then(argument("permission", SimpleArgConsumer)
                         .execute(PermsAddCommand))))
             .then(literal("role")
+                .requires_permission()
                 .then(argument("role_action", SimpleArgConsumer)
                     .then(argument("player", PlayersArgumentConsumer)
                         .then(argument("role", SimpleArgConsumer)
                             .execute(PermsRoleCommand)))))
             .then(literal("info")
+                .requires_permission()
                 .then(argument("player", PlayersArgumentConsumer)
                     .execute(PermsInfoCommand)))
     }
