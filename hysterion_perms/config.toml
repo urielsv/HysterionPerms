@@ -3,22 +3,34 @@
 # Permissions are a list of strings that define what actions the role can perform
 
 [roles.admin]
-level = 3
+level = 4  # Admin level
 permissions = [
-    "hysterion.perms.*",  # Wildcard for all permission commands
-    "hysterion.admin.*"   # Example admin permissions
+    "hysterion.perms",           # Base permission for /perms command
+    "hysterion.perms.add",       # Permission to add permissions to players
+    "hysterion.perms.role",      # Permission to manage roles
+    "hysterion.perms.info",      # Permission to view permissions
+    "hysterion.perms.*"          # Wildcard for all permission commands
 ]
 
 [roles.moderator]
-level = 2
+level = 3  # Moderator level
 permissions = [
-    "hysterion.perms.view",
+    "hysterion.perms",           # Base permission for /perms command
+    "hysterion.perms.info",      # Permission to view permissions
     "hysterion.mod.kick",
     "hysterion.mod.ban"
 ]
 
+[roles.helper]
+level = 2  # Helper level
+permissions = [
+    "hysterion.perms.info",      # Only permission info access
+    "hysterion.helper.mute",
+    "hysterion.helper.warn"
+]
+
 [roles.default]
-level = 1
+level = 1  # Default level
 permissions = [
     "hysterion.basic.play",
     "hysterion.basic.chat"
