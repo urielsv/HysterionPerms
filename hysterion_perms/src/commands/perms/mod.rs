@@ -50,35 +50,24 @@ impl Command for PermsCommand {
     }
 
     fn init_command() -> CommandTree where Self: Sized {
-        let tree = CommandTree::new([Self.get_name()], Self.get_description())
-            .execute(PermsCommand)
-            .then(literal("add")
+        CommandTree::new([Self.get_name()], Self.get_description())
+            .then(literal(Self.get_name())
                 .requires_permission()
-                .then(argument("player", PlayersArgumentConsumer)
-                    .then(argument("permission", SimpleArgConsumer)
-                        .execute(PermsAddCommand))))
-            .then(literal("role")
-                .requires_permission()
-                .then(argument("role_action", SimpleArgConsumer)
+                .execute(PermsCommand)
+                .then(literal("add")
+                    .requires_permission()
                     .then(argument("player", PlayersArgumentConsumer)
-                        .then(argument("role", SimpleArgConsumer)
-                            .execute(PermsRoleCommand)))))
-            .then(literal("info")
-                .requires_permission()
-                .then(argument("player", PlayersArgumentConsumer)
-                    .execute(PermsInfoCommand)));
-
-        // Set requires_permission on the root node
-        let mut nodes = tree.nodes;
-        if let Some(first_node) = nodes.first_mut() {
-            first_node.requires_permission = true;
-        }
-        
-        CommandTree {
-            nodes,
-            children: tree.children,
-            names: tree.names,
-            description: tree.description,
-        }
+                        .then(argument("permission", SimpleArgConsumer)
+                            .execute(PermsAddCommand))))
+                .then(literal("role")
+                    .requires_permission()
+                    .then(argument("role_action", SimpleArgConsumer)
+                        .then(argument("player", PlayersArgumentConsumer)
+                            .then(argument("role", SimpleArgConsumer)
+                                .execute(PermsRoleCommand)))))
+                .then(literal("info")
+                    .requires_permission()
+                    .then(argument("player", PlayersArgumentConsumer)
+                        .execute(PermsInfoCommand))))
     }
 } 
