@@ -1,6 +1,7 @@
 use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
 use std::sync::Arc;
 use tokio::sync::OnceCell;
+use std::path::Path;
 
 static DB_INSTANCE: OnceCell<Arc<DB>> = OnceCell::const_new();
 
@@ -10,17 +11,15 @@ pub struct DB {
 
 impl DB {
     pub async fn init(path: &str) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
-        let mut requires_setup = false;
-        if !Sqlite::database_exists(path).await? {
-            Sqlite::create_database(path).await?;
-            requires_setup = true;
+        let db_url = format!("sqlite:{}", path);
+        
+        if !Path::new(path).exists() {
+            log::info!("Creating database at {}", path);
+            Sqlite::create_database(&db_url).await?;
         }
 
-        let pool = SqlitePool::connect(path).await?;
-
-        if requires_setup {
-            log::info!("Setting up database...");
-        }
+        let pool = SqlitePool::connect(&db_url).await?;
+        log::info!("Database connection established");
 
         Ok(DB { pool })
     }
@@ -35,5 +34,5 @@ pub async fn setup_db(path: &str) -> Result<(), Box<dyn std::error::Error + Send
 }
 
 pub async fn get_db() -> Arc<DB> {
-    DB_INSTANCE.get().unwrap().clone()
+    DB_INSTANCE.get().expect("Database not initialized").clone()
 } 

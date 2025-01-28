@@ -18,7 +18,7 @@ impl CommandExecutor for PermsRoleCommand {
     async fn execute<'a>(
         &self,
         sender: &mut CommandSender<'a>,
-        server: &Server,
+        _server: &Server,
         args: &ConsumedArgs<'a>,
     ) -> Result<(), CommandError> {
         let Some(Arg::Simple(role_action)) = args.get("role_action") else {

@@ -15,13 +15,14 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn load() -> Result<Self, Box<dyn std::error::Error>> {
-        let config_path = Path::new("config.toml");
+    pub fn load(data_dir: &Path) -> Result<Self, Box<dyn std::error::Error>> {
+        let config_path = data_dir.join("config.toml");
         
         // Create default config if it doesn't exist
         if !config_path.exists() {
+            log::info!("Creating default config at {:?}", config_path);
             let default_config = include_str!("../config.toml");
-            fs::write(config_path, default_config)?;
+            fs::write(&config_path, default_config)?;
         }
 
         // Read and parse config
