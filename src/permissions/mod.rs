@@ -25,21 +25,45 @@ pub struct PlayerPermissions {
 impl PlayerPermissions {
     pub async fn has_permission(&self, permission: &str) -> bool {
         // Check direct permissions first
-        if self.direct_permissions.contains(&permission.to_string()) {
-            return true;
+        for direct_perm in &self.direct_permissions {
+            if check_permission_match(direct_perm, permission) {
+                log::debug!(
+                    "[Permission Check] Direct permission match: '{}' matches '{}'",
+                    direct_perm,
+                    permission
+                );
+                return true;
+            }
         }
 
         // Check role permissions
         for role_name in &self.roles {
             if let Ok(role) = get_role(role_name).await {
-                if role.permissions.contains(&permission.to_string()) {
-                    return true;
+                log::debug!("[Permission Check] Checking role '{}' permissions", role_name);
+                for role_perm in &role.permissions {
+                    if check_permission_match(role_perm, permission) {
+                        log::debug!(
+                            "[Permission Check] Role permission match: '{}' from role '{}' matches '{}'",
+                            role_perm,
+                            role_name,
+                            permission
+                        );
+                        return true;
+                    }
                 }
             }
         }
 
+        log::debug!("[Permission Check] No matching permissions found for '{}'", permission);
         false
     }
+}
+
+// Helper function to check if a permission matches, including wildcard support
+fn check_permission_match(held_permission: &str, required_permission: &str) -> bool {
+    held_permission == "*" || 
+    held_permission == required_permission || 
+    (held_permission.ends_with(".*") && required_permission.starts_with(&held_permission[..held_permission.len()-2]))
 }
 
 #[allow(dead_code)]
@@ -213,50 +237,7 @@ impl PermissionChecker for HysterionPermissionChecker {
             log::debug!("[Permission Check] Checking permission '{}' for player {}", permission, uuid);
             
             match get_player_permissions(uuid).await {
-                Ok(player_perms) => {
-                    // Check direct permissions first
-                    for direct_perm in &player_perms.direct_permissions {
-                        let matches = direct_perm == "*" || direct_perm == permission || 
-                                    (direct_perm.ends_with(".*") && permission.starts_with(&direct_perm[..direct_perm.len()-2]));
-                        
-                        log::debug!(
-                            "[Permission Check] Comparing direct permission '{}' with required '{}': {}",
-                            direct_perm,
-                            permission,
-                            matches
-                        );
-                        
-                        if matches {
-                            return true;
-                        }
-                    }
-
-                    // Check role permissions
-                    for role_name in &player_perms.roles {
-                        if let Ok(role) = get_role(role_name).await {
-                            log::debug!("[Permission Check] Checking role '{}' permissions", role_name);
-                            
-                            for role_perm in &role.permissions {
-                                let matches = role_perm == "*" || role_perm == permission ||
-                                            (role_perm.ends_with(".*") && permission.starts_with(&role_perm[..role_perm.len()-2]));
-                                
-                                log::debug!(
-                                    "[Permission Check] Comparing role permission '{}' with required '{}': {}",
-                                    role_perm,
-                                    permission,
-                                    matches
-                                );
-                                
-                                if matches {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                    
-                    log::debug!("[Permission Check] No matching permissions found for '{}'", permission);
-                    false
-                },
+                Ok(player_perms) => player_perms.has_permission(permission).await,
                 Err(e) => {
                     log::error!("Failed to check permissions for {}: {}", uuid, e);
                     false
