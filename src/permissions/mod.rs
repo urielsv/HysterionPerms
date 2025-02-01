@@ -210,19 +210,51 @@ impl HysterionPermissionChecker {
 impl PermissionChecker for HysterionPermissionChecker {
     fn check_permission(&self, uuid: &Uuid, permission: &str) -> bool {
         self.runtime.block_on(async {
+            log::debug!("[Permission Check] Checking permission '{}' for player {}", permission, uuid);
+            
             match get_player_permissions(uuid).await {
                 Ok(player_perms) => {
-                    if player_perms.direct_permissions.contains(&permission.to_string()) {
-                        return true;
+                    // Check direct permissions first
+                    for direct_perm in &player_perms.direct_permissions {
+                        let matches = direct_perm == "*" || direct_perm == permission || 
+                                    (direct_perm.ends_with(".*") && permission.starts_with(&direct_perm[..direct_perm.len()-2]));
+                        
+                        log::debug!(
+                            "[Permission Check] Comparing direct permission '{}' with required '{}': {}",
+                            direct_perm,
+                            permission,
+                            matches
+                        );
+                        
+                        if matches {
+                            return true;
+                        }
                     }
 
+                    // Check role permissions
                     for role_name in &player_perms.roles {
                         if let Ok(role) = get_role(role_name).await {
-                            if role.permissions.contains(&permission.to_string()) {
-                                return true;
+                            log::debug!("[Permission Check] Checking role '{}' permissions", role_name);
+                            
+                            for role_perm in &role.permissions {
+                                let matches = role_perm == "*" || role_perm == permission ||
+                                            (role_perm.ends_with(".*") && permission.starts_with(&role_perm[..role_perm.len()-2]));
+                                
+                                log::debug!(
+                                    "[Permission Check] Comparing role permission '{}' with required '{}': {}",
+                                    role_perm,
+                                    permission,
+                                    matches
+                                );
+                                
+                                if matches {
+                                    return true;
+                                }
                             }
                         }
                     }
+                    
+                    log::debug!("[Permission Check] No matching permissions found for '{}'", permission);
                     false
                 },
                 Err(e) => {
