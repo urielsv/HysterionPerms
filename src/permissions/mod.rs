@@ -24,13 +24,13 @@ pub struct PlayerPermissions {
 
 impl PlayerPermissions {
     pub async fn has_permission(&self, permission: &str) -> bool {
-        log::error!("[HysterionPerms] Starting permission check for {}: {}", self.uuid, permission);
+        log::info!("[HysterionPerms] Starting permission check for {}: {}", self.uuid, permission);
         
         // Check direct permissions first
-        log::error!("[HysterionPerms] Direct permissions: {:?}", self.direct_permissions);
+        log::info!("[HysterionPerms] Direct permissions: {:?}", self.direct_permissions);
         for direct_perm in &self.direct_permissions {
             if check_permission_match(direct_perm, permission) {
-                log::error!(
+                log::info!(
                     "[HysterionPerms] Direct permission match: '{}' matches '{}'",
                     direct_perm,
                     permission
@@ -40,14 +40,14 @@ impl PlayerPermissions {
         }
 
         // Check role permissions
-        log::error!("[HysterionPerms] Checking roles: {:?}", self.roles);
+        log::info!("[HysterionPerms] Checking roles: {:?}", self.roles);
         for role_name in &self.roles {
             match get_role(role_name).await {
                 Ok(role) => {
-                    log::error!("[HysterionPerms] Role '{}' permissions: {:?}", role_name, role.permissions);
+                    log::info!("[HysterionPerms] Role '{}' permissions: {:?}", role_name, role.permissions);
                     for role_perm in &role.permissions {
                         if check_permission_match(role_perm, permission) {
-                            log::error!(
+                            log::info!(
                                 "[HysterionPerms] Role permission match: '{}' from role '{}' matches '{}'",
                                 role_perm,
                                 role_name,
@@ -61,7 +61,7 @@ impl PlayerPermissions {
             }
         }
 
-        log::error!("[HysterionPerms] No matching permissions found for '{}'", permission);
+        log::info!("[HysterionPerms] No matching permissions found for '{}'", permission);
         false
     }
 }
@@ -72,7 +72,7 @@ fn check_permission_match(held_permission: &str, required_permission: &str) -> b
                  held_permission == required_permission || 
                  (held_permission.ends_with(".*") && required_permission.starts_with(&held_permission[..held_permission.len()-2]));
     
-    log::error!(
+    log::info!(
         "[HysterionPerms] Permission match check: '{}' against '{}' = {}",
         held_permission,
         required_permission,
@@ -250,11 +250,11 @@ impl HysterionPermissionChecker {
 impl PermissionChecker for HysterionPermissionChecker {
     fn check_permission(&self, uuid: &Uuid, permission: &str) -> bool {
         self.runtime.block_on(async {
-            log::error!("[HysterionPerms] Checking permission '{}' for player {}", permission, uuid);
+            log::info!("[HysterionPerms] Checking permission '{}' for player {}", permission, uuid);
             
             match get_player_permissions(uuid).await {
                 Ok(player_perms) => {
-                    log::error!("[HysterionPerms] Found permissions for player: {:?}", player_perms);
+                    log::info!("[HysterionPerms] Found permissions for player: {:?}", player_perms);
                     player_perms.has_permission(permission).await
                 },
                 Err(e) => {
@@ -267,8 +267,8 @@ impl PermissionChecker for HysterionPermissionChecker {
 }
 
 pub async fn init_permission_system(server: &Context) {
-    log::error!("[HysterionPerms] Initializing permission system");
+    log::info!("[HysterionPerms] Initializing permission system");
     let checker = Arc::new(HysterionPermissionChecker::new());
     server.register_permission_checker(checker).await;
-    log::error!("[HysterionPerms] Permission system initialized and checker registered");
+    log::info!("[HysterionPerms] Permission system initialized and checker registered");
 } 

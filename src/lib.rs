@@ -12,6 +12,7 @@ use crate::commands::perms::PermsCommand;
 use crate::commands::Command;
 use tokio::runtime::Runtime;
 use std::sync::OnceLock;
+use env_logger;
 
 static RUNTIME: OnceLock<Runtime> = OnceLock::new();
 
@@ -24,6 +25,12 @@ fn get_runtime() -> &'static Runtime {
 
 #[plugin_method]
 pub async fn on_load(&mut self, server: &Context) -> Result<(), String> {
+    // Initialize logger with proper settings
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info"))
+        .format_timestamp_millis()
+        .format_module_path(true)
+        .init();
+
     // Initialize runtime first
     let _runtime = get_runtime();
     
@@ -31,7 +38,7 @@ pub async fn on_load(&mut self, server: &Context) -> Result<(), String> {
     let data_dir = PathBuf::from(server.get_data_folder());
     std::fs::create_dir_all(&data_dir).map_err(|e| format!("Failed to create data directory: {}", e))?;
     
-    log::error!("[HysterionPerms] Starting plugin initialization");
+    log::info!("[HysterionPerms] Starting plugin initialization");
     
     // Initialize config first
     if let Err(e) = config::setup_config(data_dir.to_str().unwrap()).await {
