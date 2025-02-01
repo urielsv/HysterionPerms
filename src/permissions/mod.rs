@@ -24,11 +24,14 @@ pub struct PlayerPermissions {
 
 impl PlayerPermissions {
     pub async fn has_permission(&self, permission: &str) -> bool {
+        log::error!("[HysterionPerms] Starting permission check for {}: {}", self.uuid, permission);
+        
         // Check direct permissions first
+        log::error!("[HysterionPerms] Direct permissions: {:?}", self.direct_permissions);
         for direct_perm in &self.direct_permissions {
             if check_permission_match(direct_perm, permission) {
-                log::debug!(
-                    "[Permission Check] Direct permission match: '{}' matches '{}'",
+                log::error!(
+                    "[HysterionPerms] Direct permission match: '{}' matches '{}'",
                     direct_perm,
                     permission
                 );
@@ -37,33 +40,46 @@ impl PlayerPermissions {
         }
 
         // Check role permissions
+        log::error!("[HysterionPerms] Checking roles: {:?}", self.roles);
         for role_name in &self.roles {
-            if let Ok(role) = get_role(role_name).await {
-                log::debug!("[Permission Check] Checking role '{}' permissions", role_name);
-                for role_perm in &role.permissions {
-                    if check_permission_match(role_perm, permission) {
-                        log::debug!(
-                            "[Permission Check] Role permission match: '{}' from role '{}' matches '{}'",
-                            role_perm,
-                            role_name,
-                            permission
-                        );
-                        return true;
+            match get_role(role_name).await {
+                Ok(role) => {
+                    log::error!("[HysterionPerms] Role '{}' permissions: {:?}", role_name, role.permissions);
+                    for role_perm in &role.permissions {
+                        if check_permission_match(role_perm, permission) {
+                            log::error!(
+                                "[HysterionPerms] Role permission match: '{}' from role '{}' matches '{}'",
+                                role_perm,
+                                role_name,
+                                permission
+                            );
+                            return true;
+                        }
                     }
-                }
+                },
+                Err(e) => log::error!("[HysterionPerms] Failed to get role {}: {}", role_name, e),
             }
         }
 
-        log::debug!("[Permission Check] No matching permissions found for '{}'", permission);
+        log::error!("[HysterionPerms] No matching permissions found for '{}'", permission);
         false
     }
 }
 
 // Helper function to check if a permission matches, including wildcard support
 fn check_permission_match(held_permission: &str, required_permission: &str) -> bool {
-    held_permission == "*" || 
-    held_permission == required_permission || 
-    (held_permission.ends_with(".*") && required_permission.starts_with(&held_permission[..held_permission.len()-2]))
+    let matches = held_permission == "*" || 
+                 held_permission == required_permission || 
+                 (held_permission.ends_with(".*") && required_permission.starts_with(&held_permission[..held_permission.len()-2]));
+    
+    log::error!(
+        "[HysterionPerms] Permission match check: '{}' against '{}' = {}",
+        held_permission,
+        required_permission,
+        matches
+    );
+    
+    matches
 }
 
 #[allow(dead_code)]
@@ -234,12 +250,15 @@ impl HysterionPermissionChecker {
 impl PermissionChecker for HysterionPermissionChecker {
     fn check_permission(&self, uuid: &Uuid, permission: &str) -> bool {
         self.runtime.block_on(async {
-            log::debug!("[Permission Check] Checking permission '{}' for player {}", permission, uuid);
+            log::error!("[HysterionPerms] Checking permission '{}' for player {}", permission, uuid);
             
             match get_player_permissions(uuid).await {
-                Ok(player_perms) => player_perms.has_permission(permission).await,
+                Ok(player_perms) => {
+                    log::error!("[HysterionPerms] Found permissions for player: {:?}", player_perms);
+                    player_perms.has_permission(permission).await
+                },
                 Err(e) => {
-                    log::error!("Failed to check permissions for {}: {}", uuid, e);
+                    log::error!("[HysterionPerms] Failed to check permissions for {}: {}", uuid, e);
                     false
                 }
             }
@@ -248,6 +267,8 @@ impl PermissionChecker for HysterionPermissionChecker {
 }
 
 pub async fn init_permission_system(server: &Context) {
+    log::error!("[HysterionPerms] Initializing permission system");
     let checker = Arc::new(HysterionPermissionChecker::new());
     server.register_permission_checker(checker).await;
+    log::error!("[HysterionPerms] Permission system initialized and checker registered");
 } 
