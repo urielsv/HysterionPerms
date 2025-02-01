@@ -26,10 +26,13 @@ fn get_runtime() -> &'static Runtime {
 #[plugin_method]
 pub async fn on_load(&mut self, server: &Context) -> Result<(), String> {
     // Initialize logger with proper settings
-    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info"))
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info,error"))
         .format_timestamp_millis()
         .format_module_path(true)
+        .filter_level(log::LevelFilter::Error)
+        .filter_module("hysterion_perms", log::LevelFilter::Info)
         .init();
+
 
     // Initialize runtime first
     let _runtime = get_runtime();
