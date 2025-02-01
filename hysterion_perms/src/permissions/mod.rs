@@ -17,13 +17,12 @@ pub struct Role {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PlayerPermissions {
-    pub uuid: String,
+    pub uuid: Uuid,
     pub roles: Vec<String>,
     pub direct_permissions: Vec<String>,
 }
 
 impl PlayerPermissions {
-    #[allow(dead_code)]
     pub async fn has_permission(&self, permission: &str) -> bool {
         // Check direct permissions first
         if self.direct_permissions.contains(&permission.to_string()) {
@@ -141,13 +140,13 @@ pub async fn add_role_permission(role_name: &str, permission: &str) -> Result<()
     Ok(())
 }
 
-#[allow(dead_code)]
-pub async fn get_player_permissions(uuid: &str) -> Result<PlayerPermissions, sqlx::Error> {
+pub async fn get_player_permissions(uuid: &Uuid) -> Result<PlayerPermissions, sqlx::Error> {
     let db = get_db().await;
+    let uuid_str = uuid.to_string();
     
     // Get player roles
     let roles: Vec<String> = sqlx::query("SELECT role_name FROM player_roles WHERE player_uuid = $1")
-        .bind(uuid)
+        .bind(&uuid_str)
         .fetch_all(&db.pool)
         .await?
         .into_iter()
@@ -156,7 +155,7 @@ pub async fn get_player_permissions(uuid: &str) -> Result<PlayerPermissions, sql
 
     // Get direct permissions
     let direct_permissions: Vec<String> = sqlx::query("SELECT permission FROM player_permissions WHERE player_uuid = $1")
-        .bind(uuid)
+        .bind(&uuid_str)
         .fetch_all(&db.pool)
         .await?
         .into_iter()
@@ -164,17 +163,18 @@ pub async fn get_player_permissions(uuid: &str) -> Result<PlayerPermissions, sql
         .collect();
 
     Ok(PlayerPermissions {
-        uuid: uuid.to_string(),
+        uuid: *uuid,
         roles,
         direct_permissions,
     })
 }
 
-pub async fn add_player_to_role(uuid: &str, role_name: &str) -> Result<(), sqlx::Error> {
+pub async fn add_player_to_role(uuid: &Uuid, role_name: &str) -> Result<(), sqlx::Error> {
     let db = get_db().await;
+    let uuid_str = uuid.to_string();
     
     sqlx::query("INSERT INTO player_roles (player_uuid, role_name) VALUES ($1, $2)")
-        .bind(uuid)
+        .bind(&uuid_str)
         .bind(role_name)
         .execute(&db.pool)
         .await?;
@@ -182,11 +182,12 @@ pub async fn add_player_to_role(uuid: &str, role_name: &str) -> Result<(), sqlx:
     Ok(())
 }
 
-pub async fn add_player_permission(uuid: &str, permission: &str) -> Result<(), sqlx::Error> {
+pub async fn add_player_permission(uuid: &Uuid, permission: &str) -> Result<(), sqlx::Error> {
     let db = get_db().await;
+    let uuid_str = uuid.to_string();
     
     sqlx::query("INSERT INTO player_permissions (player_uuid, permission) VALUES ($1, $2)")
-        .bind(uuid)
+        .bind(&uuid_str)
         .bind(permission)
         .execute(&db.pool)
         .await?;
@@ -209,9 +210,7 @@ impl HysterionPermissionChecker {
 impl PermissionChecker for HysterionPermissionChecker {
     fn check_permission(&self, uuid: &Uuid, permission: &str) -> bool {
         self.runtime.block_on(async {
-            let uuid_str = uuid.to_string();
-            
-            match get_player_permissions(&uuid_str).await {
+            match get_player_permissions(uuid).await {
                 Ok(player_perms) => {
                     if player_perms.direct_permissions.contains(&permission.to_string()) {
                         return true;
@@ -227,7 +226,7 @@ impl PermissionChecker for HysterionPermissionChecker {
                     false
                 },
                 Err(e) => {
-                    log::error!("Failed to check permissions for {}: {}", uuid_str, e);
+                    log::error!("Failed to check permissions for {}: {}", uuid, e);
                     false
                 }
             }

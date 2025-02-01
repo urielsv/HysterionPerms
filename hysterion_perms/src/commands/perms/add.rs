@@ -29,7 +29,7 @@ impl CommandExecutor for PermsAddCommand {
         };
 
         let player = &targets[0];
-        let player_uuid = player.gameprofile.id.to_string();
+        let player_uuid = player.gameprofile.id;
         let permission_str = permission.to_string();
 
         // Execute database operation in our runtime

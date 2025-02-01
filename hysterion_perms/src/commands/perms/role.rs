@@ -32,7 +32,7 @@ impl CommandExecutor for PermsRoleCommand {
         };
 
         let player = &targets[0];
-        let player_uuid = player.gameprofile.id.to_string();
+        let player_uuid = player.gameprofile.id;
         let role_name = role.to_string();
 
         let runtime = get_runtime();

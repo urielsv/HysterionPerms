@@ -26,7 +26,7 @@ impl CommandExecutor for PermsInfoCommand {
         };
 
         let player = &targets[0];
-        let player_uuid = player.gameprofile.id.to_string();
+        let player_uuid = player.gameprofile.id;
 
         // Execute database operation in our runtime
         let runtime = get_runtime();
